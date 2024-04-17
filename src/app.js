@@ -2,6 +2,7 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -13,14 +14,14 @@ const pool = new Pool({
 });
 
 app.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, role, password } = req.body;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     try {
         const newUser = await pool.query(
-            'INSERT INTO users (uuid, username, email, password, salt) VALUES (uuid_generate_v4(), $1, $2, $3, $4) RETURNING *',
-            [username, email, hashedPassword, salt]
+            'INSERT INTO users (uuid, username, email, role, password, salt) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5) RETURNING *',
+            [username, email, role, hashedPassword, salt]
         );
         res.json(newUser.rows[0]);
     } catch (err) {
@@ -85,6 +86,41 @@ app.get('/protected', (req, res) => {
 
         res.json({ message: 'welcome ' + dbUser.rows[0].username});
     });
+});
+
+//Add a route to /achievements/add
+app.post('/achievements/add', async (req, res) => {
+    const { name, description, image_url } = req.body;
+    try {
+        const newAchievement = await pool.query(
+            'INSERT INTO achievements (uuid, name, description, image) VALUES (uuid_generate_v4(), $1, $2, $3) RETURNING *',
+            [name, description, image_url]
+        );
+        res.json(newAchievement.rows[0]);
+    } catch (err) {
+        console.error(JSON.stringify({
+            message: "Erreur lors du contact avec la base de données",
+            error: err.message,
+            code: err.code
+        }, null, 2));
+        res.status(500).send('Server error');
+    }
+});
+
+app.get('/achievements/get/:name', (req, res) => {
+    const { name } = req.params;
+    pool.query('SELECT * FROM achievements WHERE name = $1', [name], (error, results) => {
+        if (error) {
+            throw error;
+        }
+        res.status(200).json(results.rows[0].image_url);
+    });
+});
+
+//Genère une requête pour récupérer une image
+app.get('/images/:url', (req, res) => {
+    const { url } = req.params;
+    res.sendFile(path.dirname(__dirname) + '/images/' + url);
 });
 
 app.listen(3000, () => console.log('Server running on port 3000'));

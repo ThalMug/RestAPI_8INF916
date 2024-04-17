@@ -22,10 +22,33 @@ CREATE TABLE users (
     uuid UUID PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
+    role VARCHAR(255) CHECK (role IN ('client', 'dedicated game server')),
     password VARCHAR(255) NOT NULL,
-    salt VARCHAR(255) NOT NULL
+    salt VARCHAR(255) NOT NULL,
 );
 ```
+
+Pour les achievements, il faut créer une table qui fait le lien entre un user et un achievements, pour cela
+
+Une table achievements
+```sql
+CREATE TABLE achievements (
+    uuid UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    image TEXT
+);
+```
+
+ainsi qu'une de lien
+```sql
+CREATE TABLE user_achievements (
+    user_uuid UUID REFERENCES users(uuid),
+    achievement_uuid UUID REFERENCES achievements(uuid),
+    PRIMARY KEY (user_uuid, achievement_uuid)
+);
+```
+
 
 Enfin, il faut installer l'extension **uuid-ossp** pour pouvoir créer des user id différent directement dans postgresql
 ```sql
