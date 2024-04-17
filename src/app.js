@@ -70,14 +70,20 @@ app.post('/login', async (req, res) => {
 app.get('/protected', (req, res) => {
     const token = req.headers['authorization'].split(' ')[1];
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
         if (err) {
             //console.log("User is forbidden from accessing this endpoint")
-            return res.sendStatus(403);
+            //Send a res status of 403 and a message
+            return res.status(403).json({ message: 'You\'re forbidden from accessing this endpoint, pls connect beforehand' });
         }
 
-        req.user = user;
-        res.json({ message: 'This is a protected endpoint', user: req.user });
+        //Get the user associated in the database with the token
+        console.log(user.user_id)
+        const dbUser = await pool.query('SELECT * FROM users WHERE uuid = $1', [user.user_id]);
+        console.log(dbUser.rows[0].username)
+
+
+        res.json({ message: 'welcome ' + dbUser.rows[0].username});
     });
 });
 
