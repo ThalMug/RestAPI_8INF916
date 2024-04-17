@@ -27,6 +27,22 @@ CREATE TABLE users (
 );
 ```
 
+Enfin, il faut installer l'extension **uuid-ossp** pour pouvoir créer des user id différent directement dans postgresql
+```sql
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+```
+
+Si jamais, vous pouvez vérifier les extentions activées avec 
+```sql
+SELECT * FROM pg_extension;
+```
+
+> :warning: Les extensions sont installés sur la database, pas sur PostgreSQL, assurez-vous d'être connecter sur la database au préalable.
+Pour vous connecter dans le futur à une database, vous pouvez faire
+```sql
+psql -U postgres -d databasename
+```
+
 
 ## Variables d'environnement requises
 
