@@ -12,7 +12,6 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
     const salt = await bcrypt.genSalt(10);
@@ -20,12 +19,16 @@ app.post('/register', async (req, res) => {
 
     try {
         const newUser = await pool.query(
-            'INSERT INTO users (username, email, password, salt) VALUES ($1, $2, $3, $4) RETURNING *',
+            'INSERT INTO users (uuid, username, email, password, salt) VALUES (uuid_generate_v4(), $1, $2, $3, $4) RETURNING *',
             [username, email, hashedPassword, salt]
         );
         res.json(newUser.rows[0]);
     } catch (err) {
-        console.error(err.message);
+        console.error(JSON.stringify({
+            message: "Erreur lors du contact avec la base de données",
+            error: err.message,
+            code: err.code
+        }, null, 2));
         res.status(500).send('Server error');
     }
 });
@@ -60,6 +63,22 @@ app.post('/login', async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+});
+
+// A Protected route, where you have to log in to continue
+// If you're already login, you can use your JWT token to access this route
+app.get('/protected', (req, res) => {
+    const token = req.headers['authorization'].split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            //console.log("User is forbidden from accessing this endpoint")
+            return res.sendStatus(403);
+        }
+
+        req.user = user;
+        res.json({ message: 'This is a protected endpoint', user: req.user });
+    });
 });
 
 app.listen(3000, () => console.log('Server running on port 3000'));
