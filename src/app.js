@@ -92,17 +92,18 @@ app.get('/protected', (req, res) => {
 
 //Add a route to /achievements/add
 app.post('/achievements/add', async (req, res) => {
-    const { name, description} = req.body;
+    const { name, description } = req.body;
 
     try {
+        // Insert a new achievement into the achievements table
         const newAchievement = await pool.query(
-            'INSERT INTO achievements (uuid, name, description, image) VALUES (uuid_generate_v4(), $1, $2, $3) RETURNING *',
+            'INSERT INTO achievements (name, description, image) VALUES ($1, $2, $3) RETURNING *',
             [name, description, hardcodedImageUrl]
         );
         res.json(newAchievement.rows[0]);
     } catch (err) {
         console.error(JSON.stringify({
-            message: "Erreur lors du contact avec la base de données",
+            message: "Error contacting the database",
             error: err.message,
             code: err.code
         }, null, 2));
@@ -129,12 +130,12 @@ app.get('/images/:url', (req, res) => {
 app.listen(3000, () => console.log('Server running on port 3000'));
 
 app.post('/user/achievements/unlock', async (req, res) => {
-    const { user_uuid, achievement_uuid } = req.body;
-    console.log(achievement_uuid);
+    const { user_uuid, achievement_id } = req.body;
+    console.log(achievement_id);
     try {
         const newUserAchievement = await pool.query(
             'INSERT INTO user_achievements (user_uuid, achievement_uuid) VALUES ($1, $2) RETURNING *',
-            [user_uuid, achievement_uuid]
+            [user_uuid, achievement_id]
         );
         res.json(newUserAchievement.rows[0]);
     } catch (err) {
