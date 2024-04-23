@@ -24,7 +24,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL,
     role VARCHAR(255) CHECK (role IN ('client', 'dedicated game server')),
     password VARCHAR(255) NOT NULL,
-    salt VARCHAR(255) NOT NULL,
+    salt VARCHAR(255) NOT NULL
 );
 ```
 
