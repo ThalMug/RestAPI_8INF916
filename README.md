@@ -43,9 +43,9 @@ CREATE TABLE achievements (
 ainsi qu'une de lien
 ```sql
 CREATE TABLE user_achievements (
-    user_uuid UUID REFERENCES users(uuid),
-    achievement_uuid UUID REFERENCES achievements(uuid),
-    PRIMARY KEY (user_uuid, achievement_uuid)
+    user_id int REFERENCES users(id),
+    achievement_id int REFERENCES achievements(id),
+    PRIMARY KEY (user_id, achievement_id)
 );
 ```
 
