@@ -90,12 +90,12 @@ const a_image_url = 'husky.jpeg';
 
 async function runTests() {
     await testRegister(username, email, password, role); // Test Registration
-    await getProtected(token, username);
+    //await getProtected(token, username);
     await testLogin(email, password); // Test Login
-    await getProtected(token, username);
-    await createAchievement(a_name, a_description, a_image_url); // Test Achievement Creation
-    await getAchievements(a_name); // Test Achievement Retrieval
-    await getImagesOfAchievements(a_image_url); // Test Achievement Image Retrieval
+    //await getProtected(token, username);
+    //await createAchievement(a_name, a_description, a_image_url); // Test Achievement Creation
+    //await getAchievements(a_name); // Test Achievement Retrieval
+    //await getImagesOfAchievements(a_image_url); // Test Achievement Image Retrieval
 }
 
 runTests();

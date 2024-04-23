@@ -16,13 +16,14 @@ const pool = new Pool({
 app.post('/register', async (req, res) => {
     const { username, email, role, password } = req.body;
     const salt = await bcrypt.genSalt(10);
+    console.log(username, email, role);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     try {
         const newUser = await pool.query(
             'INSERT INTO users (uuid, username, email, role, password, salt) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5) RETURNING *',
             [username, email, role, hashedPassword, salt]
         );
+        console.log(username);
         res.json(newUser.rows[0]);
     } catch (err) {
         console.error(JSON.stringify({
@@ -69,7 +70,7 @@ app.post('/login', async (req, res) => {
 // A Protected route, where you have to log in to continue
 // If you're already login, you can use your JWT token to access this route
 app.get('/protected', (req, res) => {
-    const token = req.headers['authorization'].split(' ')[1];
+    const token = req.headers['authorization'];
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
         if (err) {
