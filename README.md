@@ -33,7 +33,7 @@ Pour les achievements, il faut créer une table qui fait le lien entre un user e
 Une table achievements
 ```sql
 CREATE TABLE achievements (
-    uuid UUID PRIMARY KEY,
+    id int PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     image TEXT
@@ -43,9 +43,9 @@ CREATE TABLE achievements (
 ainsi qu'une de lien
 ```sql
 CREATE TABLE user_achievements (
-    user_id int REFERENCES users(id),
+    user_uuid UUID REFERENCES users(id),
     achievement_id int REFERENCES achievements(id),
-    PRIMARY KEY (user_id, achievement_id)
+    PRIMARY KEY (user_uuid, achievement_id)
 );
 ```
 
