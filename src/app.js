@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const hardcodedImageUrl = "https://www.google.com/imgres?q=achievement&imgurl=https%3A%2F%2Folc-wordpress-assets.s3.amazonaws.com%2Fuploads%2F2021%2F04%2FOLC-Awards-Thumbnail-1200x800.jpg&imgrefurl=https%3A%2F%2Fonlinelearningconsortium.org%2Fabout%2Folj-outstanding-achievement-award-online-education%2F&docid=6bNM2VMhzvQ5vM&tbnid=AbZ0CqbHti5kVM&vet=12ahUKEwim-5iZ1NiFAxV3D1kFHRBJBksQM3oFCIQBEAA..i&w=1200&h=800&hcb=2&ved=2ahUKEwim-5iZ1NiFAxV3D1kFHRBJBksQM3oFCIQBEAA";
 
 require('dotenv').config();
 
@@ -91,11 +92,12 @@ app.get('/protected', (req, res) => {
 
 //Add a route to /achievements/add
 app.post('/achievements/add', async (req, res) => {
-    const { name, description, image_url } = req.body;
+    const { name, description} = req.body;
+
     try {
         const newAchievement = await pool.query(
             'INSERT INTO achievements (uuid, name, description, image) VALUES (uuid_generate_v4(), $1, $2, $3) RETURNING *',
-            [name, description, image_url]
+            [name, description, hardcodedImageUrl]
         );
         res.json(newAchievement.rows[0]);
     } catch (err) {
@@ -125,3 +127,22 @@ app.get('/images/:url', (req, res) => {
 });
 
 app.listen(3000, () => console.log('Server running on port 3000'));
+
+app.post('/user/achievements/unlock', async (req, res) => {
+    const { user_uuid, achievement_uuid } = req.body;
+    console.log(achievement_uuid);
+    try {
+        const newUserAchievement = await pool.query(
+            'INSERT INTO user_achievements (user_uuid, achievement_uuid) VALUES ($1, $2) RETURNING *',
+            [user_uuid, achievement_uuid]
+        );
+        res.json(newUserAchievement.rows[0]);
+    } catch (err) {
+        console.error(JSON.stringify({
+            message: "Erreur lors du contact avec la base de données",
+            error: err.message,
+            code: err.code
+        }, null, 2));
+        res.status(500).send('Server error');
+    }
+});
