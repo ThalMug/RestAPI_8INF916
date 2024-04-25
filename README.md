@@ -24,7 +24,9 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL,
     role VARCHAR(255) CHECK (role IN ('client', 'dedicated game server')),
     password VARCHAR(255) NOT NULL,
-    salt VARCHAR(255) NOT NULL
+    salt VARCHAR(255) NOT NULL,
+    rank INT CHECK (rank >= 1 AND rank <= 5),
+    kda FLOAT
 );
 ```
 
@@ -48,7 +50,15 @@ CREATE TABLE user_achievements (
     PRIMARY KEY (user_uuid, achievement_id)
 );
 ```
+Ajouter les succès implémentés 
+```sql
+INSERT INTO achievements (id, name, description, image)
+VALUES
+    ('1', 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'),
+    ('2', 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'),
+    ('3', 'Hey', 'Do something', 'https://example.com/achievement3.jpg');
 
+```
 
 Enfin, il faut installer l'extension **uuid-ossp** pour pouvoir créer des user id différent directement dans postgresql
 ```sql
@@ -65,7 +75,6 @@ Pour vous connecter dans le futur à une database, vous pouvez faire
 ```sql
 psql -U postgres -d databasename
 ```
-
 
 ## Variables d'environnement requises
 
