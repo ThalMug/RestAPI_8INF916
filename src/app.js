@@ -7,6 +7,8 @@ const achievementRoutes = require('./routes/achievementRoutes');
 const serverRoutes = require('./routes/serverRoutes');
 const matchmakingRoutes = require('./routes/matchmakingRoutes');
 
+redisclient.connect();
+
 const app = express();
 app.use(express.json());
 
