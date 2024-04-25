@@ -7,14 +7,11 @@ const redis = require('redis');
 const hardcodedImageUrl = "https://www.google.com/imgres?q=achievement&imgurl=https%3A%2F%2Folc-wordpress-assets.s3.amazonaws.com%2Fuploads%2F2021%2F04%2FOLC-Awards-Thumbnail-1200x800.jpg&imgrefurl=https%3A%2F%2Fonlinelearningconsortium.org%2Fabout%2Folj-outstanding-achievement-award-online-education%2F&docid=6bNM2VMhzvQ5vM&tbnid=AbZ0CqbHti5kVM&vet=12ahUKEwim-5iZ1NiFAxV3D1kFHRBJBksQM3oFCIQBEAA..i&w=1200&h=800&hcb=2&ved=2ahUKEwim-5iZ1NiFAxV3D1kFHRBJBksQM3oFCIQBEAA";
 
 require('dotenv').config();
-
-redisclient.connect();
-
 const app = express();
 app.use(express.json());
 
 const redisClient = redis.createClient({
-    url: 'redis://localhost:6379'
+    url: 'redis://172.21.0.2:6379'
 });
 
 redisClient.connect();
