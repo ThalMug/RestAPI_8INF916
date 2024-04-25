@@ -8,6 +8,8 @@ const hardcodedImageUrl = "https://www.google.com/imgres?q=achievement&imgurl=ht
 
 require('dotenv').config();
 
+redisclient.connect();
+
 const app = express();
 app.use(express.json());
 

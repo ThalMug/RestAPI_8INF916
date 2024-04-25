@@ -14,7 +14,7 @@ async function testRegister(username, email, password, role) {
         });
         console.log('Register Success:', response.data);
     } catch (error) {
-        console.error('Register Failed:', error.response.data);
+        console.error('Register Failed:', error.message.data);
     }
 }
 
