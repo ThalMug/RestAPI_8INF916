@@ -156,20 +156,35 @@ app.post('/user/achievements/unlock', async (req, res) => {
     }
 });
 
-app.get('/matchmaking', (req, res) => {
-    const token = req.headers['authorization'];
+app.post('/server/register', async (req, res) => {
+    const { ip_address } = req.body;
 
-    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'You\'re forbidden from accessing this endpoint, please connect beforehand' });
-        }
+    try {
+        const newServer = await pool.query(
+            'INSERT INTO dedicated_server (server_id, ip_address) VALUES (uuid_generate_v4(), $1) RETURNING *',
+            [ip_address]
+        );
 
-        const uuid = user.user_id;
-
-        res.json({ message: 'Matchmaking started for user: ' + uuid });
-    });
-    
+        res.status(200).json(newServer.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
 });
+
+app.post('/server/create-session', async (req, res) => {
+    const { serverIp } = req.body;
+
+    try {
+        await redisClient.hSet(`server-info:${serverIp}`, 'lastUpdated', Date.now());
+
+        res.status(200).json({ message: 'Server session created.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
 
 
 app.post('/server/add-player', async (req, res) => {
@@ -179,7 +194,7 @@ app.post('/server/add-player', async (req, res) => {
 
     try {
         await redisClient.sAdd(serverSessionKey, playerUuid);
-        
+
         await redisClient.hSet(`server-info:${serverIp}`, 'lastUpdated', Date.now());
 
         res.status(200).json({ message: 'Player added to server session.' });
@@ -187,6 +202,14 @@ app.post('/server/add-player', async (req, res) => {
         console.error(err);
         res.status(500).send('Server error');
     }
+});
+
+
+
+app.get('/matchmaking', async (req, res) => {
+    const {serverIp} = req.body;
+    
+    
 });
 
 
