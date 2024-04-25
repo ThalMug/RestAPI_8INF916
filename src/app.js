@@ -1,18 +1,14 @@
 ﻿const express = require('express');
 require('dotenv').config();
-const { redisClient } = require('./config/redis');
-const { pool, createTables } = require('./config/db');
-const userRoutes = require('./routes/userRoutes');
-const achievementRoutes = require('./routes/achievementRoutes');
-const serverRoutes = require('./routes/serverRoutes');
-const matchmakingRoutes = require('./routes/matchmakingRoutes');
-
-redisclient.connect();
-
 const app = express();
 app.use(express.json());
 
-// Redis error handling
+const redisClient = redis.createClient({
+    url: 'redis://172.21.0.2:6379'
+});
+
+redisClient.connect();
+
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 
 createTables();
