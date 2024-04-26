@@ -30,6 +30,14 @@ CREATE TABLE users (
 );
 ```
 
+Et une table pour les dedicated server
+```sql
+CREATE TABLE dedicated_server (
+    server_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ip_address VARCHAR(45)
+);
+```
+
 Pour les achievements, il faut créer une table qui fait le lien entre un user et un achievements, pour cela
 
 Une table achievements
