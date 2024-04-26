@@ -91,6 +91,17 @@ async function testAddPlayer(serverIp, playerUuid) {
     }
 }
 
+async function testMatchmaking(PlayerUUID){
+    try {
+        const response = await axios.get(`${baseURL}/matchmaking`, {
+            PlayerUUID
+        });
+        console.log('Matchmaking Success:', response.data);
+    } catch (error) {
+        console.error('Matchmaking Failed:', error.response.data);
+    }
+}
+
 // Replace with the desired test credentials
 const username = 'testUser';
 const email = 'test@example.com';
@@ -103,15 +114,8 @@ const a_description = 'testDescription';
 const a_image_url = 'husky.jpeg';
 
 async function runTests() {
-    await testRegister(username, email, password, role); // Test Registration
-    //await getProtected(token, username);
-    await testLogin(email, password); // Test Login
-    
-    await testAddPlayer("172.10.0.1", '1234567890');
-    //await getProtected(token, username);
-    //await createAchievement(a_name, a_description, a_image_url); // Test Achievement Creation
-    //await getAchievements(a_name); // Test Achievement Retrieval
-    //await getImagesOfAchievements(a_image_url); // Test Achievement Image Retrieval
+
+    testMatchmaking("4ac88863-aaf4-4ac5-ad6d-8b545348f1bf")
 }
 
 runTests();
