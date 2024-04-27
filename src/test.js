@@ -1,121 +1,15 @@
 const axios = require('axios');
 
-const baseURL = 'http://localhost:3000'; // Adjust the URL based on your server config
-
-var token = null;
-
-async function testRegister(username, email, password, role) {
+async function registerFakeServer() {
     try {
-        const response = await axios.post(`${baseURL}/register`, {
-            username,
-            email,
-            role,
-            password
+        const response = await axios.post('http://localhost:3000/servers/register', {
+            ip_address: "120.0.0.1"
         });
-        console.log('Register Success:', response.data);
-    } catch (error) {
-        console.error('Register Failed:', error.response.data);
+
+        console.log('Fake server registered:', response.data);
+    } catch (err) {
+        console.error('Error registering fake server:', err.message);
     }
 }
 
-async function testLogin(email, password) {
-    try {
-        const response = await axios.post(`${baseURL}/login`, {
-            email,
-            password
-        });
-        token = response.data.token;
-        console.log('Login Success:', response.data.token);
-    } catch (error) {
-        console.error('Login Failed:', error.response.data);
-    }
-}
-
-async function getProtected(token, user) {
-    try {
-        const response = await axios.get(`${baseURL}/protected`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }, 
-            user : user
-        });
-        console.log('Protected Data:', response.data);
-    } catch (error) {
-        console.error('Protected Data Failed:', error.response.data);
-    }
-}
-
-async function createAchievement(name, description, image_url){
-    try{
-        const response = await axios.post(`${baseURL}/achievements/add`, {
-            name,
-            description,
-            image_url
-        });
-        console.log('Achievement Created:', response.data);
-    } catch (error) {
-        console.error('Achievement Creation Failed:', error.response.data);
-    }
-}
-
-// Create a get function to get an achievement by name
-async function getAchievements(name){
-    try{
-        const response = await axios.get(`${baseURL}/achievements/get/${name}`);
-        console.log('Achievement Retrieved:', response.data);
-    } catch (error) {
-        console.error('Achievement Retrieval Failed:', error.response.data);
-    }
-}
-
-async function getImagesOfAchievements(url){
-    try{
-        const response = await axios.get(`${baseURL}/images/${url}`);
-        console.log('Achievement Images Retrieved:', response.data);
-    } catch (error) {
-        console.error('Achievement Images Retrieval Failed:', error.response.data);
-    }
-}
-
-
-//test server/add-player
-async function testAddPlayer(serverIp, playerUuid) {
-    try {
-        const response = await axios.post(`${baseURL}/server/add-player`, {
-            serverIp,
-            playerUuid
-        });
-        console.log('Add Player Success:', response.data);
-    } catch (error) {
-        console.error('Add Player Failed:', error.response.data);
-    }
-}
-
-async function testMatchmaking(PlayerUUID){
-    try {
-        const response = await axios.get(`${baseURL}/matchmaking`, {
-            PlayerUUID
-        });
-        console.log('Matchmaking Success:', response.data);
-    } catch (error) {
-        console.error('Matchmaking Failed:', error.response.data);
-    }
-}
-
-// Replace with the desired test credentials
-const username = 'testUser';
-const email = 'test@example.com';
-const password = 'password123';
-const role = 'client';
-
-// const for achievement
-const a_name = 'testAchievement';
-const a_description = 'testDescription';
-const a_image_url = 'husky.jpeg';
-
-async function runTests() {
-
-    testMatchmaking("4ac88863-aaf4-4ac5-ad6d-8b545348f1bf")
-}
-
-runTests();
+registerFakeServer();
