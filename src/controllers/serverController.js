@@ -72,6 +72,31 @@ async function addPlayer(req, res) {
     }
 }
 
+async function removePlayer(req, res) {
+    const { playerUuid } = req.body;
+    let serverIP = req.ip;
+
+    if (serverIP === '::1') {
+        serverIP = '127.0.0.1';
+    }
+
+    const serverSessionKey = `session:${serverIP}`;
+    const playerKey = `player:${playerUuid}`;
+
+    try {
+        await redisClient.sRem(serverSessionKey, playerUuid);
+
+        await redisClient.del(playerKey);
+
+        console.log(`Player removed from session: ${playerUuid}`);
+        res.status(200).json({ message: 'Player removed from server session.' });
+    } catch (err) {
+        console.error('Redis error:', err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+
 async function getAllPlayerInfo(req, res) {
     let serverIP = req.ip;
 
