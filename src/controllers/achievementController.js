@@ -2,6 +2,7 @@
 const hardcodedImageUrl = "https://example.com/image.jpg";  // Placeholder URL
 
 async function addAchievement(req, res) {
+    console.log("Adding achievement")
     const { name, description } = req.body;
     try {
         const newAchievement = await pool.query(
@@ -10,6 +11,29 @@ async function addAchievement(req, res) {
         );
         res.json(newAchievement.rows[0]);
     } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+async function unlockAchievement(req, res) {
+    console.log("Unlock achievement");
+    const { user_uuid, achievement_id } = req.body;
+    console.log("User: ", user_uuid);
+    console.log("Achivement: ", achievement_id);
+    try {
+        await pool.query('BEGIN');
+
+        // Assuming the achievement_uuid is the ID of an existing achievement
+        const userAchievement = await pool.query(
+            'INSERT INTO user_achievements (user_uuid, achievement_id) VALUES ($1, $2) RETURNING *',
+            [user_uuid, achievement_id]
+        );
+
+        await pool.query('COMMIT');
+        res.json(userAchievement.rows[0]);
+    } catch (err) {
+        await pool.query('ROLLBACK');
         console.error(err.message);
         res.status(500).send('Server error');
     }
@@ -31,5 +55,6 @@ async function getAchievement(req, res) {
 
 module.exports = {
     addAchievement,
-    getAchievement
+    getAchievement,
+    unlockAchievement
 };
