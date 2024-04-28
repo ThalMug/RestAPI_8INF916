@@ -1,6 +1,7 @@
 ﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/db');
+const verifyJWT = require('../verifyJWT');
 
 async function registerUser(req, res) {
     const { username, email, role, password } = req.body;
@@ -36,7 +37,10 @@ async function loginUser(req, res) {
         }
 
         const token = jwt.sign(
-            { user_id: user.rows[0].uuid },
+            {
+                user_id: user.rows[0].uuid,
+                role: user.rows[0].role
+            },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -49,35 +53,46 @@ async function loginUser(req, res) {
 }
 
 async function getUserAchievements(req, res) {
-    const { userId } = req.params;
-    try {
-        const achievements = await pool.query(
-            'SELECT * FROM user_achievements WHERE user_uuid = $1',
-            [userId]
-        );
-        res.json(achievements.rows);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+    verifyJWT(req, res, async function () {
+        const { userId, role } = req;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        try {
+            const achievements = await pool.query(
+                'SELECT * FROM user_achievements WHERE user_uuid = $1',
+                [userId]
+            );
+            res.json(achievements.rows);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    });
 }
 
 async function unlockUserAchievement(req, res) {
     const { user_uuid, achievement_id } = req.body;
-    try {
-        const newUserAchievement = await pool.query(
-            'INSERT INTO user_achievements (user_uuid, achievement_uuid) VALUES ($1, $2) RETURNING *',
-            [user_uuid, achievement_id]
-        );
-        res.json(newUserAchievement.rows[0]);
-    } catch (err) {
-        console.error(JSON.stringify({
-            message: "Error when interacting with the database",
-            error: err.message,
-            code: err.code
-        }, null, 2));
-        res.status(500).send('Server error');
-    }
+    verifyJWT(req, res, async function () {
+        const { userId, role } = req;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        try {
+            const newUserAchievement = await pool.query(
+                'INSERT INTO user_achievements (user_uuid, achievement_uuid) VALUES ($1, $2) RETURNING *',
+                [user_uuid, achievement_id]
+            );
+            res.json(newUserAchievement.rows[0]);
+        } catch (err) {
+            console.error(JSON.stringify({
+                message: "Error when interacting with the database",
+                error: err.message,
+                code: err.code
+            }, null, 2));
+            res.status(500).send('Server error');
+        }
+    });
 }
 
 module.exports = {
