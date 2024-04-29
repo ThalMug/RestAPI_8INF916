@@ -58,13 +58,27 @@ CREATE TABLE user_achievements (
     PRIMARY KEY (user_uuid, achievement_id)
 );
 ```
+
+et une d'amis 
+```
+CREATE TABLE friends (
+    user_uuid UUID NOT NULL,
+    friend_uuid UUID NOT NULL,
+    PRIMARY KEY (user_uuid, friend_uuid),
+    FOREIGN KEY (user_uuid) REFERENCES users(uuid),
+    FOREIGN KEY (friend_uuid) REFERENCES users(uuid)
+);
+```
+
 Ajouter les succès implémentés 
 ```sql
 INSERT INTO achievements (id, name, description, image)
 VALUES
     ('1', 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'),
     ('2', 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'),
-    ('3', 'Hey', 'Do something', 'https://example.com/achievement3.jpg');
+    ('3', 'Fffffantastic', 'Press F', 'https://example.com/achievement3.jpg');
+    ('4', 'Vrouuuum', 'Sprint for the first time', 'https://example.com/achievement4.jpg');
+    ('5', 'Ratatata', 'Discharge your magazine', 'https://example.com/achievement5.jpg');
 
 ```
 
