@@ -64,7 +64,7 @@ async function addPlayer(req, res) {
             );
 
             if (queryResult.rows.length === 0) {
-                res.status(404).json({message: 'Player not found.'});
+                res.status(404).json({ message: 'Player not found.' });
                 return;
             }
 
@@ -82,13 +82,14 @@ async function addPlayer(req, res) {
             // Add player UUID to the server session set
             await redisClient.sAdd(serverSessionKey, playerUuid);
             console.log(`Player data retrieved and added to session: ${playerUuid}`);
-            res.status(200).json({message: 'Player added to server session.', playerData});
+            res.status(200).json({ message: 'Player added to server session.', playerData });
         } catch (err) {
             console.error('Database or Redis error:', err.message);
             res.status(500).send('Server error');
         }
     });
 }
+
 async function removePlayer(req, res) {
     const { playerUuid } = req.body;
     let serverIP = req.ip;
@@ -99,18 +100,24 @@ async function removePlayer(req, res) {
 
     const serverSessionKey = `session:${serverIP}`;
     const playerKey = `player:${playerUuid}`;
+    verifyJWT(req, res, async function () {
+        const { user_id, role } = req;
+        if (role != "dedicated game server") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
 
-    try {
-        await redisClient.sRem(serverSessionKey, playerUuid);
+        try {
+            await redisClient.sRem(serverSessionKey, playerUuid);
 
-        await redisClient.del(playerKey);
+            await redisClient.del(playerKey);
 
-        console.log(`Player removed from session: ${playerUuid}`);
-        res.status(200).json({ message: 'Player removed from server session.' });
-    } catch (err) {
-        console.error('Redis error:', err.message);
-        res.status(500).send('Server error');
-    }
+            console.log(`Player removed from session: ${playerUuid}`);
+            res.status(200).json({ message: 'Player removed from server session.' });
+        } catch (err) {
+            console.error('Redis error:', err.message);
+            res.status(500).send('Server error');
+        }
+    });
 }
 
 
@@ -120,30 +127,39 @@ async function getAllPlayerInfo(req, res) {
     if (serverIP === '::1') {
         serverIP = '127.0.0.1';
     }
-    
+
     const serverSessionKey = `session:${serverIP}`;
-    try {
-        const playerUUIDs = await redisClient.sMembers(serverSessionKey);
-        const playersInfo = [];
-        
-        for (const uuid of playerUUIDs) {
-            const playerKey = `player:${uuid}`;
-            const playerData = await redisClient.hGetAll(playerKey);
-            if (Object.keys(playerData).length > 0) {
-                playersInfo.push(playerData);
-            }
+    verifyJWT(req, res, async function () {
+        const { user_id, role } = req;
+        if (role != "dedicated game server") {
+            return res.status(403).json({ message: 'Forbidden' });
         }
 
-        console.log(`All players in server ${serverIP}:`, playersInfo);
-        return playersInfo;
-    } catch (err) {
-        console.error('Error retrieving player information:', err.message);
-        return [];
-    }
+        try {
+            const playerUUIDs = await redisClient.sMembers(serverSessionKey);
+            const playersInfo = [];
+
+            for (const uuid of playerUUIDs) {
+                const playerKey = `player:${uuid}`;
+                const playerData = await redisClient.hGetAll(playerKey);
+                if (Object.keys(playerData).length > 0) {
+                    playersInfo.push(playerData);
+                }
+            }
+
+            console.log(`All players in server ${serverIP}:`, playersInfo);
+            return playersInfo;
+        } catch (err) {
+            console.error('Error retrieving player information:', err.message);
+            return [];
+        }
+    });
 }
 
 module.exports = {
     registerServer,
+    createSession,
     addPlayer,
+    removePlayer,
     getAllPlayerInfo
 };

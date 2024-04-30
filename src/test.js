@@ -13,10 +13,5 @@ async function registerFakeServer() {
 }
 
 
-        console.log('Fake server registered:', response.data);
-    } catch (err) {
-        console.error('Error registering fake server:', err.message);
-    }
-}
 
 registerFakeServer();

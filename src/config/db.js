@@ -32,11 +32,31 @@ const createTables = async () => {
                 image TEXT
             );
 
+            INSERT INTO achievements (id, name, description, image)
+                SELECT 1, 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'
+                UNION ALL SELECT 2, 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'
+                UNION ALL SELECT 3, 'Fffffantastic', 'Press F', 'https://example.com/achievement3.jpg'
+                UNION ALL SELECT 4, 'Vrouuuum', 'Sprint for the first time', 'https://example.com/achievement4.jpg'
+                UNION ALL SELECT 5, 'Ratatata', 'Discharge your magazine', 'https://example.com/achievement5.jpg'
+                WHERE NOT EXISTS (SELECT 1 FROM achievements);
+
+
+
             CREATE TABLE IF NOT EXISTS user_achievements (
                 user_uuid UUID REFERENCES users(uuid),
                 achievement_id int REFERENCES achievements(id),
                 PRIMARY KEY (user_uuid, achievement_id)
             );
+
+            CREATE TABLE IF NOT EXISTS friends (
+                user_uuid UUID NOT NULL,
+                friend_uuid UUID NOT NULL,
+                PRIMARY KEY (user_uuid, friend_uuid),
+                FOREIGN KEY (user_uuid) REFERENCES users(uuid),
+                FOREIGN KEY (friend_uuid) REFERENCES users(uuid)
+            );
+
+            
         `);
         console.log('Tables created successfully');
     } catch (err) {
