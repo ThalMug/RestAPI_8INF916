@@ -175,7 +175,41 @@ async function getFriends(req, res) {
             res.status(500).send('Server error');
         }
     });
+
 }
+
+async function getFriends(req, res) {
+    const { userId } = req.params;
+    try {
+        // Query the friends table to get the UUIDs of the user's friends
+        const friendUuids = await pool.query(
+            'SELECT friend_uuid FROM friends WHERE user_uuid = $1',
+            [userId]
+        );
+
+        // Extract the friend UUIDs from the result
+        const friendUuidArray = friendUuids.rows.map(row => row.friend_uuid);
+
+        // Query the users table to get the usernames corresponding to the friend UUIDs
+        const friendsWithUsernames = await pool.query(
+            'SELECT username FROM users WHERE uuid = ANY($1)',
+            [friendUuidArray]
+        );
+
+        // Extract the usernames from the result
+        const usernames = friendsWithUsernames.rows.map(row => row.username);
+
+        console.log('User', userId, 'has friends:', usernames);
+
+        // Send the usernames as the response
+        res.json(usernames);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+
 
 module.exports = {
     registerUser,
@@ -185,3 +219,4 @@ module.exports = {
     addFriend,
     getFriends
 };
+

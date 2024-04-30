@@ -1,5 +1,5 @@
 ﻿const express = require('express');
-const { registerUser, loginUser, getUserAchievements, unlockUserAchievement } = require('../controllers/userController');
+const { registerUser, loginUser, getUserAchievements,addFriend, getFriends} = require('../controllers/userController');
 
 const router = express.Router();
 

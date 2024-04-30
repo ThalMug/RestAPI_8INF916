@@ -22,7 +22,7 @@ const createTables = async () => {
 
             CREATE TABLE IF NOT EXISTS dedicated_server (
                 server_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                ip_address VARCHAR(45)
+                ip_address VARCHAR(45) UNIQUE NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS achievements (

@@ -58,13 +58,27 @@ CREATE TABLE user_achievements (
     PRIMARY KEY (user_uuid, achievement_id)
 );
 ```
+
+et une d'amis 
+```
+CREATE TABLE friends (
+    user_uuid UUID NOT NULL,
+    friend_uuid UUID NOT NULL,
+    PRIMARY KEY (user_uuid, friend_uuid),
+    FOREIGN KEY (user_uuid) REFERENCES users(uuid),
+    FOREIGN KEY (friend_uuid) REFERENCES users(uuid)
+);
+```
+
 Ajouter les succès implémentés 
 ```sql
 INSERT INTO achievements (id, name, description, image)
 VALUES
     ('1', 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'),
     ('2', 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'),
-    ('3', 'Hey', 'Do something', 'https://example.com/achievement3.jpg');
+    ('3', 'Fffffantastic', 'Press F', 'https://example.com/achievement3.jpg');
+    ('4', 'Vrouuuum', 'Sprint for the first time', 'https://example.com/achievement4.jpg');
+    ('5', 'Ratatata', 'Discharge your magazine', 'https://example.com/achievement5.jpg');
 
 ```
 
@@ -100,3 +114,10 @@ DATABASE_URL="postgresql://postgres:user@localhost:port/databasename"
 JWT_SECRET="arandomstring"
 ```
 
+## Récupération de l'IP du Dedicated Game Server
+
+Lorsqu'un dedicated game server se lance, il envoie une requête à l'API. Ce dernier est censé détecter l'adresse IP de l'envoyeur (ie, le dgs), sauf que nous nous sommes rendus compte qu'avec Docker Compose, l'adresse IP interne de docker, et après plusieurs jours de débug nous n'avons toujours pas réussi à régler cela. 
+
+Nous avons donc décidé de faire en sorte que le dgs puisse d'abord récupérer son adresse IP en faisant une requête à "http://<votre_adresse_ip>:3001/ip", puis de renvoyer cette dernière à l'api dans son body. 
+
+Il faudra donc, en plus de lancer le docker, lancer un server node en dehors du docker avec la commande ...

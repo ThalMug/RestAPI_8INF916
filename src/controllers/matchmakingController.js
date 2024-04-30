@@ -40,7 +40,9 @@ async function getServerWithBestRankAndKda(req, res) {
             const averageRank = totalRank / players.length;
             const averageKda = totalKda / players.length;
 
+
             const playerData = await pool.query('SELECT rank, kda FROM users WHERE uuid = $1', [user_id]);
+
             const playerRank = playerData.rows[0].rank;
             const playerKda = playerData.rows[0].kda;
 
@@ -58,7 +60,9 @@ async function getServerWithBestRankAndKda(req, res) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+
 });
+
 }
 
 module.exports = { getServerWithBestRankAndKda };
