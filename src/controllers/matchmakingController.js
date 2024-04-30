@@ -13,7 +13,7 @@ const verifyJWT = require('../verifyJWT');
 
 async function getServerWithBestRankAndKda(req, res) {
     verifyJWT(req, res, async function () {
-        const { playerUuid, role } = req;
+        const {user_id, role } = req;
         if (role != "client") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -40,7 +40,7 @@ async function getServerWithBestRankAndKda(req, res) {
             const averageRank = totalRank / players.length;
             const averageKda = totalKda / players.length;
 
-            const playerData = await pool.query('SELECT rank, kda FROM users WHERE uuid = $1', [playerUuid]);
+            const playerData = await pool.query('SELECT rank, kda FROM users WHERE uuid = $1', [user_id]);
             const playerRank = playerData.rows[0].rank;
             const playerKda = playerData.rows[0].kda;
 

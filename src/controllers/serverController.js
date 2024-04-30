@@ -4,7 +4,18 @@ const jwt = require('jsonwebtoken');
 const verifyJWT = require('../verifyJWT');
 
 async function registerServer(req, res) {
-    const { ip_address } = req.body;
+    console.log(req.headers);
+    let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if (clientIp.includes(',')) {
+        clientIp = clientIp.split(',')[0];  // In case the header includes multiple IP addresses
+    }
+
+    console.log(`Your IP address is ${clientIp}`);
+    let ip_address = req.ip;
+    if (ip_address.substr(0, 7) === "::ffff:") {
+        ip_address = ip_address.substr(7);
+    }
+    req.ip_address = ip_address;
     console.log(ip_address);
     try {
         const newServer = await pool.query(
@@ -32,7 +43,7 @@ async function registerServer(req, res) {
 async function createSession(req, res) {
     const { serverIp } = req.body;
     verifyJWT(req, res, async function () {
-        const { userId, role } = req;
+        const { user_id, role } = req;
         if (role != "dedicated game server") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -50,7 +61,7 @@ async function addPlayer(req, res) {
     const { serverIp, playerUuid } = req.body;
     const serverSessionKey = `server:1:${serverIp}`;
     verifyJWT(req, res, async function () {
-        const { userId, role } = req;
+        const { user_id, role } = req;
         if (role != "dedicated game server") {
             return res.status(403).json({ message: 'Forbidden' });
         }

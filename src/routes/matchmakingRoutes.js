@@ -1,4 +1,4 @@
-﻿﻿const express = require('express');
+﻿const express = require('express');
 const { getServerWithBestRankAndKda } = require('../controllers/matchmakingController');
 
 const router = express.Router();
