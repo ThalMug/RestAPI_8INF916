@@ -1,4 +1,4 @@
-﻿﻿const bcrypt = require('bcryptjs');
+﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/db');
 const verifyJWT = require('../verifyJWT');
@@ -95,9 +95,93 @@ async function unlockUserAchievement(req, res) {
     });
 }
 
+async function addFriend(req, res) {
+    console.log("Trying to add friend in app")
+    const { user_uuid, friend_username } = req.body;
+    console.log("Trying to add friend in app")
+    verifyJWT(req, res, async function () {
+        const { userId, role } = req;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        try {
+            // Query the users table to find the user UUID associated with the friend's username
+            const friendQuery = await pool.query(
+                'SELECT uuid FROM users WHERE username = $1',
+                [friend_username]
+            );
+
+            if (friendQuery.rows.length === 0) {
+                return res.status(404).json({ message: 'Friend not found' });
+            }
+
+            const friendUuid = friendQuery.rows[0].uuid;
+
+            // Now you have both the user UUID and the friend UUID, proceed to add the friend
+            const existingFriendship = await pool.query(
+                'SELECT * FROM friends WHERE user_uuid = $1 AND friend_uuid = $2',
+                [userId, friendUuid]
+            );
+
+            if (existingFriendship.rows.length > 0) {
+                return res.status(400).json({ message: 'Friendship already exists' });
+            }
+
+            // Insert the new friendship
+            await pool.query(
+                'INSERT INTO friends (user_uuid, friend_uuid) VALUES ($1, $2)',
+                [userId, friendUuid]
+            );
+
+            res.status(201).json({ message: 'Friend added successfully' });
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    });
+}
+
+async function getFriends(req, res) {
+    verifyJWT(req, res, async function () {
+        const { userId, role } = req;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        try {
+            // Query the friends table to get the UUIDs of the user's friends
+            const friendUuids = await pool.query(
+                'SELECT friend_uuid FROM friends WHERE user_uuid = $1',
+                [userId]
+            );
+
+            // Extract the friend UUIDs from the result
+            const friendUuidArray = friendUuids.rows.map(row => row.friend_uuid);
+
+            // Query the users table to get the usernames corresponding to the friend UUIDs
+            const friendsWithUsernames = await pool.query(
+                'SELECT username FROM users WHERE uuid = ANY($1)',
+                [friendUuidArray]
+            );
+
+            // Extract the usernames from the result
+            const usernames = friendsWithUsernames.rows.map(row => row.username);
+
+            console.log('User', userId, 'has friends:', usernames);
+
+            // Send the usernames as the response
+            res.json(usernames);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    });
+}
+
 module.exports = {
     registerUser,
     loginUser,
     getUserAchievements,
-    unlockUserAchievement
+    unlockUserAchievement,
+    addFriend,
+    getFriends
 };
