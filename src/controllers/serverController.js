@@ -4,27 +4,15 @@ const jwt = require('jsonwebtoken');
 const verifyJWT = require('../verifyJWT');
 
 async function registerServer(req, res) {
-    console.log(req.headers);
-    let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if (clientIp.includes(',')) {
-        clientIp = clientIp.split(',')[0];  // In case the header includes multiple IP addresses
-    }
-
-    console.log(`Your IP address is ${clientIp}`);
-    let ip_address = req.ip;
-    if (ip_address.substr(0, 7) === "::ffff:") {
-        ip_address = ip_address.substr(7);
-    }
-    req.ip_address = ip_address;
+    const { ip_address } = req.body;
     console.log(ip_address);
-
     try {
         // Register the server in the PostgreSQL database
         const newServer = await pool.query(
             'INSERT INTO dedicated_server (server_id, ip_address) VALUES (uuid_generate_v4(), $1) RETURNING *',
             [ip_address]
         );
-
+        await redisClient.hSet(`server-info:${ip_address}`, 'lastUpdated', Date.now());
         const token = jwt.sign(
             {
                 user_id: newServer.rows[0].server_id,
@@ -39,7 +27,7 @@ async function registerServer(req, res) {
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).send('Server error' + err);
     }
 }
 
@@ -52,7 +40,6 @@ async function createSession(req, res) {
             return res.status(403).json({ message: 'Forbidden' });
         }
         try {
-            await redisClient.hSet(`server-info:${serverIp}`, 'lastUpdated', Date.now());
             res.status(200).json({ message: 'Server session created.' });
         } catch (err) {
             console.error(err.message);
@@ -62,46 +49,46 @@ async function createSession(req, res) {
 }
 
 async function addPlayer(req, res) {
-    const { serverIp, playerUuid } = req.body;
+    const {serverIp, playerUuid} = req.body;
     const serverSessionKey = `server:1:${serverIp}`;
     verifyJWT(req, res, async function () {
-        const { user_id, role } = req;
+        const {user_id, role} = req;
         if (role != "dedicated game server") {
-            return res.status(403).json({ message: 'Forbidden' });
+            return res.status(403).json({message: 'Forbidden'});
         }
         try {
-        // Fetch player information from the database
-        const queryResult = await pool.query(
-            'SELECT rank, kda FROM users WHERE uuid = $1',
-            [playerUuid]
-        );
+            // Fetch player information from the database
+            const queryResult = await pool.query(
+                'SELECT rank, kda FROM users WHERE uuid = $1',
+                [playerUuid]
+            );
 
-        if (queryResult.rows.length === 0) {
-            res.status(404).json({ message: 'Player not found.' });
-            return;
+            if (queryResult.rows.length === 0) {
+                res.status(404).json({message: 'Player not found.'});
+                return;
+            }
+
+            const playerData = queryResult.rows[0];
+            playerData.uuid = playerUuid;  // Add UUID to the player data
+
+            // Store player information in Redis under a unique key
+            const playerKey = `player:${playerUuid}`;
+            await redisClient.hSet(playerKey, {
+                'uuid': playerUuid,
+                'rank': playerData.rank.toString(),
+                'kDa': playerData.kda.toString()
+            });
+
+            // Add player UUID to the server session set
+            await redisClient.sAdd(serverSessionKey, playerUuid);
+            console.log(`Player data retrieved and added to session: ${playerUuid}`);
+            res.status(200).json({message: 'Player added to server session.', playerData});
+        } catch (err) {
+            console.error('Database or Redis error:', err.message);
+            res.status(500).send('Server error');
         }
-
-        const playerData = queryResult.rows[0];
-        playerData.uuid = playerUuid;  // Add UUID to the player data
-
-        // Store player information in Redis under a unique key
-        const playerKey = `player:${playerUuid}`;
-        await redisClient.hSet(playerKey, {
-            'uuid': playerUuid,
-            'rank': playerData.rank.toString(),
-            'kDa': playerData.kda.toString()
-        });
-
-        // Add player UUID to the server session set
-        await redisClient.sAdd(serverSessionKey, playerUuid);
-        console.log(`Player data retrieved and added to session: ${playerUuid}`);
-        res.status(200).json({ message: 'Player added to server session.', playerData });
-    } catch (err) {
-        console.error('Database or Redis error:', err.message);
-        res.status(500).send('Server error');
-    }
     });
-
+}
 async function removePlayer(req, res) {
     const { playerUuid } = req.body;
     let serverIP = req.ip;
