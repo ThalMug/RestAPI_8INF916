@@ -1,4 +1,4 @@
-﻿﻿const express = require('express');
+﻿const express = require('express');
 require('dotenv').config();
 const { redisClient } = require('./config/redis');
 const { pool, createTables } = require('./config/db');

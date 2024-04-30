@@ -71,34 +71,8 @@ async function getUserAchievements(req, res) {
     });
 }
 
-async function unlockUserAchievement(req, res) {
-    const { user_uuid, achievement_id } = req.body;
-    verifyJWT(req, res, async function () {
-        const { userId, role } = req;
-        if (role != "client") {
-            return res.status(403).json({ message: 'Forbidden' });
-        }
-        try {
-            const newUserAchievement = await pool.query(
-                'INSERT INTO user_achievements (user_uuid, achievement_uuid) VALUES ($1, $2) RETURNING *',
-                [user_uuid, achievement_id]
-            );
-            res.json(newUserAchievement.rows[0]);
-        } catch (err) {
-            console.error(JSON.stringify({
-                message: "Error when interacting with the database",
-                error: err.message,
-                code: err.code
-            }, null, 2));
-            res.status(500).send('Server error');
-        }
-    });
-}
-
 async function addFriend(req, res) {
-    console.log("Trying to add friend in app")
     const { user_uuid, friend_username } = req.body;
-    console.log("Trying to add friend in app")
     verifyJWT(req, res, async function () {
         const { userId, role } = req;
         if (role != "client") {
@@ -215,7 +189,6 @@ module.exports = {
     registerUser,
     loginUser,
     getUserAchievements,
-    unlockUserAchievement,
     addFriend,
     getFriends
 };
