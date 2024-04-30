@@ -1,4 +1,4 @@
-﻿const express = require('express');
+﻿﻿const express = require('express');
 require('dotenv').config();
 const { redisClient } = require('./config/redis');
 const { pool, createTables } = require('./config/db');
@@ -9,10 +9,10 @@ const matchmakingRoutes = require('./routes/matchmakingRoutes');
 const matchmake = require("./controllers/matchmakingController");
 
 
+
 const app = express();
 app.use(express.json());
 
-// Redis error handling
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 
 createTables();

@@ -7,9 +7,16 @@
  */
 const { pool } = require('../config/db');
 const { redisClient } = require('../config/redis');
+const verifyJWT = require('../verifyJWT');
+
+
 
 async function getServerWithBestRankAndKda(req, res) {
-    const { playerUuid } = req.body;
+    verifyJWT(req, res, async function () {
+        const {user_id, role } = req;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
     try {
         const serverIps = await pool.query('SELECT ip_address FROM dedicated_server');
         let bestServer = serverIps.rows[0].ip_address;
@@ -33,7 +40,9 @@ async function getServerWithBestRankAndKda(req, res) {
             const averageRank = totalRank / players.length;
             const averageKda = totalKda / players.length;
 
-            const playerData = await pool.query('SELECT rank, kda FROM users WHERE uuid = $1', [playerUuid]);
+
+            const playerData = await pool.query('SELECT rank, kda FROM users WHERE uuid = $1', [user_id]);
+
             const playerRank = playerData.rows[0].rank;
             const playerKda = playerData.rows[0].kda;
 
@@ -51,6 +60,9 @@ async function getServerWithBestRankAndKda(req, res) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+
+});
+
 }
 
 module.exports = { getServerWithBestRankAndKda };

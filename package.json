@@ -4,6 +4,7 @@
   "description": "restAPI for Unreal Multiplayer Online",
   "main": "index.js",
   "scripts": {
+    "start": "node wait-for-DB.js && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
