@@ -23,25 +23,18 @@ async function unlockAchievement(req, res) {
     const { user_uuid, achievement_id } = req.body;
     console.log("User: ", user_uuid);
     console.log("Achivement: ", achievement_id);
-    verifyJWT(req, res, async function () {
-        const userId = req.user_id;
-        const role = req.role;
-        if (role != "dedicated game server") {
-            return res.status(403).json({ message: 'Forbidden' });
-        }
-        try {
+    try {
 
-            // Assuming the achievement_uuid is the ID of an existing achievement
-            const userAchievement = await pool.query(
-                'INSERT INTO user_achievements (user_uuid, achievement_id) VALUES ($1, $2) RETURNING *',
-                [user_uuid, achievement_id]
-            );
-            res.json(userAchievement.rows[0]);
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server error');
-        }
-    });
+        // Assuming the achievement_uuid is the ID of an existing achievement
+        const userAchievement = await pool.query(
+            'INSERT INTO user_achievements (user_uuid, achievement_id) VALUES ($1, $2) RETURNING *',
+            [user_uuid, achievement_id]
+        );
+        res.json(userAchievement.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 }
 
 async function getAchievement(req, res) {
