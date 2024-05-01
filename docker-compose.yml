@@ -31,10 +31,12 @@ services:
       - api_postgres
 
   redis:
+
     image: redis
     networks:
       - api_redis
-      
+    command: [ "redis-server", "--save", "", "--appendonly", "no" ]
+    
 volumes:
   pgdata:     
 
