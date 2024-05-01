@@ -41,3 +41,11 @@ Les achievements Fffffantastic et Ratatata ne sont pas déblocable dans le jeu.
 Mais les autres sont implémentés et déblocables (ex: sprinter pour la première fois).
 
 Une partie du système d'ami a été implémenté dans le jeu.
+
+
+Normalement ca ne devrait pas arriver, mais dans le cas ou vous auriez un problème avec les variables d'environnement vous pourrez créer un fichier ".env" dans lequel vous pourrez mettre :
+
+```console
+DATABASE_URL: postgresql://admin:admin@restapi_8inf916-ShootingGameDB-1:5432/shootinggame
+JWT_SECRET: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```    
