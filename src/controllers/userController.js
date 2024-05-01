@@ -12,7 +12,7 @@ async function registerUser(req, res) {
             'INSERT INTO users (uuid, username, email, role, password, salt, rank, kda) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, 4, 0.0) RETURNING *',
             [username, email, role, hashedPassword, salt]
         );
-        res.json(newUser.rows[0]);
+        res.json({user_id:newUser.rows[0], success: "register"});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -28,12 +28,12 @@ async function loginUser(req, res) {
         );
 
         if (user.rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid Credentials' });
+            return res.status(401).json({ message: 'Email not found' , error:0 , context: "login"});
         }
 
         const isValid = await bcrypt.compare(password, user.rows[0].password);
         if (!isValid) {
-            return res.status(401).json({ message: 'Invalid Credentials' });
+            return res.status(401).json({ message: 'Wrong password', error:1 , context: "login"});
         }
 
         const token = jwt.sign(
@@ -45,7 +45,7 @@ async function loginUser(req, res) {
             { expiresIn: '1h' }
         );
 
-        res.json({ token, uuid: user.rows[0].uuid });
+        res.json({ token, uuid: user.rows[0].uuid,success:"login" });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -54,7 +54,10 @@ async function loginUser(req, res) {
 
 async function getUserAchievements(req, res) {
     verifyJWT(req, res, async function () {
-        const { userId, role } = req;
+
+        const userId = req.user_id;
+        const role = req.role;
+
         if (role != "client") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -72,9 +75,10 @@ async function getUserAchievements(req, res) {
 }
 
 async function addFriend(req, res) {
-    const { user_uuid, friend_username } = req.body;
+    const { friend_username } = req.body;
     verifyJWT(req, res, async function () {
-        const { userId, role } = req;
+        const userId = req.user_id;
+        const role = req.role;
         if (role != "client") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -86,7 +90,7 @@ async function addFriend(req, res) {
             );
 
             if (friendQuery.rows.length === 0) {
-                return res.status(404).json({ message: 'Friend not found' });
+                return res.status(404).json({ message: 'Friend not found', error:0 , context: "friend" });
             }
 
             const friendUuid = friendQuery.rows[0].uuid;
@@ -98,7 +102,7 @@ async function addFriend(req, res) {
             );
 
             if (existingFriendship.rows.length > 0) {
-                return res.status(400).json({ message: 'Friendship already exists' });
+                return res.status(400).json({ message: 'Friendship already exists' , error:1 , context: "friend"});
             }
 
             // Insert the new friendship
@@ -107,7 +111,7 @@ async function addFriend(req, res) {
                 [userId, friendUuid]
             );
 
-            res.status(201).json({ message: 'Friend added successfully' });
+            res.status(201).json({ message: 'Friend added successfully' , success: "friend"});
         } catch (err) {
             console.error(err.message);
             res.status(500).send('Server error');
@@ -117,7 +121,8 @@ async function addFriend(req, res) {
 
 async function getFriends(req, res) {
     verifyJWT(req, res, async function () {
-        const { userId, role } = req;
+        const userId = req.user_id;
+        const role = req.role;
         if (role != "client") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -153,34 +158,40 @@ async function getFriends(req, res) {
 }
 
 async function getFriends(req, res) {
-    const { userId } = req.params;
-    try {
-        // Query the friends table to get the UUIDs of the user's friends
-        const friendUuids = await pool.query(
-            'SELECT friend_uuid FROM friends WHERE user_uuid = $1',
-            [userId]
-        );
+    verifyJWT(req, res, async function () {
+        const userId = req.user_id;
+        const role = req.role;
+        if (role != "client") {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        try {
+            // Query the friends table to get the UUIDs of the user's friends
+            const friendUuids = await pool.query(
+                'SELECT friend_uuid FROM friends WHERE user_uuid = $1',
+                [userId]
+            );
 
-        // Extract the friend UUIDs from the result
-        const friendUuidArray = friendUuids.rows.map(row => row.friend_uuid);
+            // Extract the friend UUIDs from the result
+            const friendUuidArray = friendUuids.rows.map(row => row.friend_uuid);
 
-        // Query the users table to get the usernames corresponding to the friend UUIDs
-        const friendsWithUsernames = await pool.query(
-            'SELECT username FROM users WHERE uuid = ANY($1)',
-            [friendUuidArray]
-        );
+            // Query the users table to get the usernames corresponding to the friend UUIDs
+            const friendsWithUsernames = await pool.query(
+                'SELECT username FROM users WHERE uuid = ANY($1)',
+                [friendUuidArray]
+            );
 
-        // Extract the usernames from the result
-        const usernames = friendsWithUsernames.rows.map(row => row.username);
+            // Extract the usernames from the result
+            const usernames = friendsWithUsernames.rows.map(row => row.username);
 
-        console.log('User', userId, 'has friends:', usernames);
+            console.log('User', userId, 'has friends:', usernames);
 
-        // Send the usernames as the response
-        res.json(usernames);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+            // Send the usernames as the response
+            res.json(usernames);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    });
 }
 
 

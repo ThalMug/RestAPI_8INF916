@@ -31,30 +31,14 @@ async function registerServer(req, res) {
     }
 }
 
-
-async function createSession(req, res) {
-    const { serverIp } = req.body;
-    verifyJWT(req, res, async function () {
-        const { user_id, role } = req;
-        if (role != "dedicated game server") {
-            return res.status(403).json({ message: 'Forbidden' });
-        }
-        try {
-            res.status(200).json({ message: 'Server session created.' });
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server error');
-        }
-    });
-}
-
 async function addPlayer(req, res) {
-    const {serverIp, playerUuid} = req.body;
+    const { serverIp, playerUuid } = req.body;
     const serverSessionKey = `server:1:${serverIp}`;
     verifyJWT(req, res, async function () {
-        const {user_id, role} = req;
+        const userId = req.user_id;
+        const role = req.role;
         if (role != "dedicated game server") {
-            return res.status(403).json({message: 'Forbidden'});
+            return res.status(403).json({ message: 'Forbidden' });
         }
         try {
             // Fetch player information from the database
@@ -101,7 +85,8 @@ async function removePlayer(req, res) {
     const serverSessionKey = `session:${serverIP}`;
     const playerKey = `player:${playerUuid}`;
     verifyJWT(req, res, async function () {
-        const { user_id, role } = req;
+        const userId = req.user_id;
+        const role = req.role;
         if (role != "dedicated game server") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -130,7 +115,8 @@ async function getAllPlayerInfo(req, res) {
 
     const serverSessionKey = `session:${serverIP}`;
     verifyJWT(req, res, async function () {
-        const { user_id, role } = req;
+        const userId = req.user_id;
+        const role = req.role;
         if (role != "dedicated game server") {
             return res.status(403).json({ message: 'Forbidden' });
         }
@@ -148,7 +134,10 @@ async function getAllPlayerInfo(req, res) {
             }
 
             console.log(`All players in server ${serverIP}:`, playersInfo);
-            return playersInfo;
+            res.status(200).json({
+                message: `All players in server ${serverIP}:`,
+                players: playersInfo
+            });
         } catch (err) {
             console.error('Error retrieving player information:', err.message);
             return [];
@@ -158,7 +147,6 @@ async function getAllPlayerInfo(req, res) {
 
 module.exports = {
     registerServer,
-    createSession,
     addPlayer,
     removePlayer,
     getAllPlayerInfo

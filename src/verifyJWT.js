@@ -13,6 +13,8 @@ const verifyJWT = (req, res, next) => {
 
             req.user_id = user.user_id;
             req.role = user.role;
+            console.log("User: ", req.user_id);
+            console.log("Role: ", req.role);
             next();
         });
     } else {
