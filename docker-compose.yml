@@ -9,7 +9,7 @@ services:
       - ShootingGameDB
       - redis
     environment:
-      DATABASE_URL: postgresql://admin:admin@172.18.0.2:5432/shootinggame
+      DATABASE_URL: postgresql://admin:admin@restapi_8inf916-ShootingGameDB-1:5432/shootinggame
       JWT_SECRET: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
     volumes:
       - .:/src
@@ -31,12 +31,11 @@ services:
       - api_postgres
 
   redis:
-
     image: redis
     networks:
       - api_redis
     command: [ "redis-server", "--save", "", "--appendonly", "no" ]
-    
+
 volumes:
   pgdata:     
 

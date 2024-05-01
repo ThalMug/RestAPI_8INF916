@@ -19,6 +19,8 @@ const createTables = async () => {
                 rank INT CHECK (rank >= 1 AND rank <= 5),
                 kda FLOAT
             );
+            
+            DROP TABLE dedicated_server;
 
             CREATE TABLE IF NOT EXISTS dedicated_server (
                 server_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

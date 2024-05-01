@@ -4,8 +4,10 @@ const jwt = require('jsonwebtoken');
 const verifyJWT = require('../verifyJWT');
 
 async function registerServer(req, res) {
-    const { ip_address } = req.body;
-    console.log(ip_address);
+    let { ip_address } = req.body;
+    if (ip_address.substr(0, 7) === "::ffff:") {
+        ip_address = ip_address.substr(7);
+    }
     try {
         // Register the server in the PostgreSQL database
         const newServer = await pool.query(

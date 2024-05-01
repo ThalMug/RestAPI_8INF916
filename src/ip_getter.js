@@ -7,6 +7,6 @@ app.get('/ip', (req, res) => {
     res.status(200).json({ message: 'Success', ip_address: ip});
 });
 
-app.listen(3001, '0.0.0.0', () => {
+app.listen(3001, () => {
     console.log('Server running on port 3001');
 });

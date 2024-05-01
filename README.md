@@ -25,3 +25,5 @@ Pour cela, il suffit de faire
 ```bash
 node ip_getter.js
 ```
+
+Les achievements Fffffantastic et Ratatata ne sont pas débloquable dans le jeu
