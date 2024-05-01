@@ -33,12 +33,17 @@ const createTables = async () => {
             );
 
             INSERT INTO achievements (id, name, description, image)
-                SELECT 1, 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'
-                UNION ALL SELECT 2, 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'
-                UNION ALL SELECT 3, 'Fffffantastic', 'Press F', 'https://example.com/achievement3.jpg'
-                UNION ALL SELECT 4, 'Vrouuuum', 'Sprint for the first time', 'https://example.com/achievement4.jpg'
-                UNION ALL SELECT 5, 'Ratatata', 'Discharge your magazine', 'https://example.com/achievement5.jpg'
-                WHERE NOT EXISTS (SELECT 1 FROM achievements);
+                SELECT * FROM (
+                    VALUES 
+                        (1, 'Jesus ?!?!', 'Walk on water', 'https://example.com/achievement1.jpg'),
+                        (2, 'Wtf', 'Get on Zeus head', 'https://example.com/achievement2.jpg'),
+                        (3, 'Fffffantastic', 'Press F', 'https://example.com/achievement3.jpg'),
+                        (4, 'Vrouuuum', 'Sprint for the first time', 'https://example.com/achievement4.jpg'),
+                        (5, 'Ratatata', 'Discharge your magazine', 'https://example.com/achievement5.jpg')
+                ) AS tmp (id, name, description, image)
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM achievements WHERE achievements.id = tmp.id
+                );
 
 
 
@@ -64,4 +69,4 @@ const createTables = async () => {
     }
 };
 
-module.exports = { pool , createTables };
+module.exports = { pool, createTables };
