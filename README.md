@@ -11,6 +11,7 @@ Une fois fait, vous pouvez lancer le docker avec
 ```bash
 docker-compose up --build
 ```
+vous pouvez changer les variables docker-compose.yml si besoin
 
 ## Récupération de l'IP du Dedicated Game Server
 
@@ -18,12 +19,25 @@ Lorsqu'un dedicated game server se lance, il envoie une requête à l'API. Ce de
 
 Nous avons donc décidé de faire en sorte que le dgs puisse d'abord récupérer son adresse IP en faisant une requête à "http://<votre_adresse_ip>:3001/ip", puis de renvoyer cette dernière à l'api dans son body. 
 
-Il faudra donc, en plus de lancer le docker, lancer un server node en dehors du docker avec la commande ...
+Si vous souhaiter modifier l'address ip dans le code Unreal il faudra le modifier dans le constructeur du SGOnline.cpp avec un format du type "http://<votre_adresse_ip>:".
 
-Pour cela, il suffit de faire 
+Il faudra donc, en plus de lancer le docker, lancer un server node en dehors du docker avec la commande :
 
 ```bash
 node ip_getter.js
 ```
+## Utilisation en jeu
 
-Les achievements Fffffantastic et Ratatata ne sont pas débloquable dans le jeu
+Une fois tout configuré vous pouvez vous register et vous login sur le main menu.
+Pour trouver une partie, appuyez sur le bouton matchmaking.
+
+Nous avons remarqué quelques bugs notamment des crashs du dedicated server ou des clients.
+Il s'agit d'erreur de pointeur que nous n'avons pas réussi à régler et qui peuvent subvenir aléatoirement.
+Nous avons quand même réussi a faire des tests sur le jeu mais il faut faire attention.
+
+## Autres notes
+
+Les achievements Fffffantastic et Ratatata ne sont pas déblocable dans le jeu.
+Mais les autres sont implémentés et déblocables (ex: sprinter pour la première fois).
+
+Une partie du système d'ami a été implémenté dans le jeu.
